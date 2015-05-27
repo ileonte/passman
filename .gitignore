@@ -1,0 +1,9 @@
+*.creator.user
+*.pro.user
+*.o
+
+Makefile
+moc_*.c*
+*.so
+*.so.*
+passman
