@@ -85,6 +85,8 @@ PasswordManager::PasswordManager(QWidget *parent) : QWidget(parent)
 			edUser_ = new QLineEdit();
 			edPass_ = new QLineEdit();
 
+			edPass_->setEchoMode(QLineEdit::Password);
+
 			lb = new QLabel(tr("&Url:"));
 			lb->setBuddy(edUrl_);
 			addLayout->addWidget(lb, 0, 0);
