@@ -281,7 +281,11 @@ void PassManApp::walletDeletePasswords(const QStringList &keys)
 
 void PassManApp::loadBackends()
 {
+#if defined(WALLET_PLUGIN_DIR)
+	QDir pluginDir(WALLET_PLUGIN_DIR);
+#else
 	QDir pluginDir(myApp->applicationDirPath() + "/wallets");
+#endif
 	WalletBackend::LibraryInterface wintf;
 	WalletBackend::LibraryInterface *aintf;
 
