@@ -39,18 +39,22 @@ void CLineEdit::keyPressEvent(QKeyEvent *ev)
 
 void CLineEdit::keyReleaseEvent(QKeyEvent *ev)
 {
-	if (count_ > 0)
+	if (count_ > 0) {
 		count_ -= 1;
 
-	if (!count_) {
-		if (escPressed_) {
-			emit escPressed();
-			ev->accept();
-		} else if (enterPressed_) {
-			emit enterPressed(enterMods_);
-			enterPressed_ = false;
-			enterMods_    = Qt::NoModifier;
-			ev->accept();
+		if (!count_) {
+			if (escPressed_) {
+				emit escPressed();
+				escPressed_ = false;
+				ev->accept();
+			} else if (enterPressed_) {
+				emit enterPressed(enterMods_);
+				enterPressed_ = false;
+				enterMods_    = Qt::NoModifier;
+				ev->accept();
+			} else {
+				QLineEdit::keyReleaseEvent(ev);
+			}
 		} else {
 			QLineEdit::keyReleaseEvent(ev);
 		}
