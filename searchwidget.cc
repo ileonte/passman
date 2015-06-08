@@ -30,7 +30,7 @@ SearchWidget::SearchWidget(QWidget *parent) : QFrame(parent)
 	searchResults_->setSelectionMode(QTreeView::SingleSelection);
 
 	connect(searchField_, &CLineEdit::escPressed, this, &SearchWidget::toggle);
-	connect(searchField_, &CLineEdit::enterPressed, this, &SearchWidget::copyPasswordToClipboard);
+	connect(searchField_, &CLineEdit::enterPressed, this, &SearchWidget::processPassword);
 	connect(searchField_, &CLineEdit::textChanged, dataFilter_, &PasswordFilterModel::setFilters);
 	connect(searchField_, &CLineEdit::up, this, &SearchWidget::goUp);
 	connect(searchField_, &CLineEdit::down, this,&SearchWidget::goDown);
@@ -65,16 +65,19 @@ void SearchWidget::toggle()
 	else show();
 }
 
-void SearchWidget::copyPasswordToClipboard()
+void SearchWidget::processPassword(Qt::KeyboardModifiers modifiers)
 {
 	QModelIndexList selected = searchResults_->selectionModel()->selectedIndexes();
 	if (selected.size()) {
 		QString key = searchResults_->model()->data(selected[0], PasswordModel::WalletKeyName).toString();
-		QString pass;
-		if (myApp->walletGetPassword(key, pass))
-			myApp->clipboard()->setText(pass);
-		qDebug() << "PASSWORD COPIED TO CLIPBOARD";
-		pass.fill(0);
+		if (modifiers == Qt::NoModifier) {
+			QString pass;
+			if (myApp->walletGetPassword(key, pass))
+				myApp->clipboard()->setText(pass);
+			pass.fill(0);
+		} else {
+			myApp->delayedSendPasswordToActiveWindow(key);
+		}
 
 		searchResults_->selectionModel()->clear();
 

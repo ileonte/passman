@@ -63,6 +63,8 @@ public:
 
 	PasswordModel *dataModel() const;
 
+	void delayedSendPasswordToActiveWindow(const QString &key, bool autoEnter = false);
+
 signals:
 	void activeBackendChanged(int i);
 	void walletNameChanged(const QString &newName);
@@ -94,6 +96,9 @@ private:
 	GlobalShortcut *gsManage_;
 
 	PasswordModel *passwordData_;
+
+	QString delayedPasswordKey_;
+	bool delayedPasswordAutoEnter_;
 };
 
 #define myApp (static_cast<PassManApp *>(QCoreApplication::instance()))

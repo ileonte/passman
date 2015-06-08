@@ -5,12 +5,20 @@
 #include <QList>
 #include <QApplication>
 #include <QWidget>
+#include <QChar>
+#include <QDebug>
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/keysymdef.h>
+
+#include <xcb/xcb_keysyms.h>
 
 #include "platformhelper_x11.h"
+#include "fakekey_x11.h"
+
+static FakeKey *fkContext;
 
 typedef QMap<QString, unsigned long> CAtomHash;
 
@@ -112,6 +120,7 @@ static inline Window getXWID(QWidget *w)
 PlatformHelperImpl::PlatformHelperImpl(QObject *parent) : QObject(parent)
 {
 	internalDetectWMSupportedAtoms();
+	fkContext = fakekey_init(QX11Info::display());
 }
 
 PlatformHelperImpl::~PlatformHelperImpl()
@@ -362,29 +371,52 @@ bool PlatformHelperImpl::popUp(QWidget *w)
 	return false;
 }
 
-QRect PlatformHelperImpl::getActiveWindowGeometry()
+WId PlatformHelperImpl::getActiveWindow()
 {
-	QRect ret;
 	Atom actual_type_return;
 	int actual_format_return;
 	unsigned long nitems_return = 0;
 	unsigned long bytes_after_return;
 	unsigned char *prop_return = nullptr;
+	WId ret = (WId)-1;
 
 	if(XGetWindowProperty(display, root, atom("_NET_ACTIVE_WINDOW"), 0l, 1l, False, AnyPropertyType,
-	                      &actual_type_return, &actual_format_return, &nitems_return, &bytes_after_return,
-	                      &prop_return) == Success && nitems_return > 0) {
+				    &actual_type_return, &actual_format_return, &nitems_return, &bytes_after_return,
+				    &prop_return) == Success && nitems_return > 0) {
 		Window wid = *((Window *)prop_return);
+		ret = (WId)wid;
+		XFree(prop_return);
+	}
+
+	return ret;
+}
+
+QRect PlatformHelperImpl::getActiveWindowGeometry()
+{
+	QRect ret;
+	WId qwid = getActiveWindow();
+
+	if (qwid != (WId)-1) {
 		int x, y, tx, ty;
 		unsigned w, h, b, d;
+		Window wid = (Window)qwid;
 		Window r;
 
 		XGetGeometry(display, wid, &r, &x, &y, &w, &h, &b, &d);
 		XTranslateCoordinates(display, wid, r, 0, 0, &tx, &ty, &wid);
 		ret = QRect(tx, ty, w, h);
-
-		XFree(prop_return);
 	}
 
 	return ret;
+}
+
+void PlatformHelperImpl::sendTextToActiveWindow(const QString &text)
+{
+	if (!fkContext)
+		return;
+
+	foreach (auto ch, text.toUcs4()) {
+		fakekey_press(fkContext, ch, 0);
+		fakekey_release(fkContext);
+	}
 }

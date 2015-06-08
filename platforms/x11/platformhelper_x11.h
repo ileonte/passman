@@ -2,6 +2,7 @@
 #define PLATFORMHELPER_X11_H
 
 #include <QObject>
+#include <QWidget>
 
 class PlatformHelperImpl : public QObject {
 	Q_OBJECT
@@ -22,7 +23,10 @@ public:
 
 	bool popUp(QWidget *w);
 
+	WId getActiveWindow();
 	QRect getActiveWindowGeometry();
+
+	void sendTextToActiveWindow(const QString &text);
 };
 
 #endif  // PLATFORMHELPER_X11_H

@@ -24,7 +24,7 @@ public slots:
 protected:
 
 private:
-	Q_SLOT void copyPasswordToClipboard();
+	Q_SLOT void processPassword(Qt::KeyboardModifiers modifiers);
 	Q_SLOT void goUp();
 	Q_SLOT void goDown();
 

@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 CONFIG += c++11 stl_off
-QT += core gui widgets x11extras
+QT += core gui widgets
 
 TARGET = passman
 TEMPLATE = app
@@ -32,11 +32,15 @@ HEADERS  += mainwindow.h \
     passwordmodel.h
 
 unix {
-        LIBS += -lX11 -ldl
+        QT += x11extras
+        LIBS += -lX11 -lXtst -ldl
+        QMAKE_CXXFLAGS += -Wno-deprecated-declarations
         HEADERS += \
                 platforms/x11/platformhelper_x11.h \
-                platforms/x11/globalshortcut_x11.h
+                platforms/x11/globalshortcut_x11.h \
+                platforms/x11/fakekey_x11.h
         SOURCES += \
                 platforms/x11/platformhelper_x11.cc \
-                platforms/x11/globalshortcut_x11.cc
+                platforms/x11/globalshortcut_x11.cc \
+                platforms/x11/fakekey_x11.cc
 }

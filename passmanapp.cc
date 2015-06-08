@@ -5,10 +5,11 @@
 #include <QIcon>
 
 #include "wallets/wallet_stringlist.h"
+#include "platforms/platformhelper.h"
 
 PassManApp::PassManApp(int &argc, char **argv) : QApplication(argc, argv),
       appLock_(QDir::tempPath() + "/passman.lock"), activeBackend_(0),
-      wallet_(nullptr)
+	wallet_(nullptr), delayedPasswordAutoEnter_(false)
 {
 	QApplication::setWindowIcon(QIcon::fromTheme("security-high"));
 
@@ -32,6 +33,18 @@ PassManApp::PassManApp(int &argc, char **argv) : QApplication(argc, argv),
 	connect(gsQuit_, &GlobalShortcut::activated, this, &PassManApp::quit);
 	connect(gsSettings_, &GlobalShortcut::activated, mainWindow_, &MainWindow::toggle);
 	connect(gsManage_, &GlobalShortcut::activated, this, &PassManApp::showPasswordManager);
+
+	connect(this, &QApplication::applicationStateChanged, [this](Qt::ApplicationState state) {
+		if (state != Qt::ApplicationActive && !delayedPasswordKey_.isEmpty()) {
+			QString pass;
+			if (walletGetPassword(delayedPasswordKey_, pass)) {
+				platformHelper()->sendTextToActiveWindow(pass + (delayedPasswordAutoEnter_ ? "\r" : ""));
+				pass.fill(0);
+			}
+			delayedPasswordKey_.clear();
+			delayedPasswordAutoEnter_ = false;
+		}
+	});
 }
 
 PassManApp::~PassManApp()
@@ -48,6 +61,12 @@ PassManApp::~PassManApp()
 
 	if (intf && wallet_)
 		intf->closeWallet(wallet_);
+}
+
+void PassManApp::delayedSendPasswordToActiveWindow(const QString &key, bool autoEnter)
+{
+	delayedPasswordKey_ = key;
+	delayedPasswordAutoEnter_ = autoEnter;
 }
 
 bool PassManApp::init()

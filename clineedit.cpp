@@ -1,20 +1,24 @@
 #include "clineedit.h"
 
-CLineEdit::CLineEdit(QWidget *parent) : QLineEdit(parent), eatEscapes_(false)
+CLineEdit::CLineEdit(QWidget *parent) : QLineEdit(parent), eatEscapes_(false),
+	enterPressed_(false), enterMods_(Qt::NoModifier), escPressed_(false), count_(0)
 {
 }
 
 void CLineEdit::keyPressEvent(QKeyEvent *ev)
 {
+	count_ += 1;
+
 	if (ev->key() == Qt::Key_Escape) {
 		if (eatEscapes_) {
-			emit escPressed();
+			escPressed_ = true;
 			ev->accept();
 		} else {
 			QLineEdit::keyPressEvent(ev);
 		}
 	} else if (ev->key() == Qt::Key_Return || ev->key() == Qt::Key_Enter) {
-		emit enterPressed();
+		enterPressed_ = true;
+		enterMods_    = ev->modifiers();
 		ev->accept();
 	} else if (ev->key() == Qt::Key_Up) {
 		emit up();
@@ -30,6 +34,28 @@ void CLineEdit::keyPressEvent(QKeyEvent *ev)
 		ev->accept();
 	} else {
 		QLineEdit::keyPressEvent(ev);
+	}
+}
+
+void CLineEdit::keyReleaseEvent(QKeyEvent *ev)
+{
+	if (count_ > 0)
+		count_ -= 1;
+
+	if (!count_) {
+		if (escPressed_) {
+			emit escPressed();
+			ev->accept();
+		} else if (enterPressed_) {
+			emit enterPressed(enterMods_);
+			enterPressed_ = false;
+			enterMods_    = Qt::NoModifier;
+			ev->accept();
+		} else {
+			QLineEdit::keyReleaseEvent(ev);
+		}
+	} else {
+		QLineEdit::keyReleaseEvent(ev);
 	}
 }
 

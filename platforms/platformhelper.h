@@ -37,9 +37,12 @@ public:
 
 	void popUp(QWidget *w);
 
+	WId getActiveWindow();
 	QRect getActiveWindowGeometry();
 	QScreen *getActiveWindowScreen();
 	void centerOnActiveScreen(QWidget *w);
+
+	void sendTextToActiveWindow(const QString &text);
 
 private:
 	PlatformHelperImpl *impl_;

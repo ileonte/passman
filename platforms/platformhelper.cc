@@ -54,9 +54,19 @@ void PlatformHelper::popUp(QWidget *w)
 		qApp->setActiveWindow(w);
 }
 
+WId PlatformHelper::getActiveWindow()
+{
+	return impl_->getActiveWindow();
+}
+
 QRect PlatformHelper::getActiveWindowGeometry()
 {
 	return impl_->getActiveWindowGeometry();
+}
+
+void PlatformHelper::sendTextToActiveWindow(const QString &text)
+{
+	impl_->sendTextToActiveWindow(text);
 }
 
 QScreen *PlatformHelper::getActiveWindowScreen()
