@@ -29,7 +29,8 @@ kwallet4 {
 }
 
 kwallet5 {
+	# REF: http://api.kde.org/frameworks-api/frameworks5-apidocs/kwallet/html/namespaceKWallet.html
+	QT += KWallet
 	SOURCES = kwallet5/wallet.cc
-	LIBS += -lkwalletbackend5 -lkdecore
 	TARGET = wallet_kw5
 }
